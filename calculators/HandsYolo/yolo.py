@@ -4,7 +4,7 @@ import numpy as np
 
 
 class YOLO:
-    def __init__(self, config, model, labels, size=416, confidence=0.5, threshold=0.3):
+    def __init__(self, config, model, labels, size=416, confidence=0.5, threshold=0.1):
         self.confidence = confidence
         self.threshold = threshold
         self.size = size

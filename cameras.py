@@ -40,8 +40,23 @@ class Cameras:
         self.intrinsics[self.serials[index]]=cameraintrinsics
 
 
-    def captureRGBandDepth(self):
-        pass
+    def captureRGBandDepth(self,index):
+        pipeline = rs.pipeline(self.ctx)
+        cfg = rs.config()
+        cfg.enable_device(self.serials[index])
+        cfg.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+        cfg.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        c = pipeline.start(cfg)
+        self.pipelines[self.serials[index]] = pipeline
+
+        rgb_profile = c.get_stream(rs.stream.color)
+        rgb_intrinsic = rgb_profile.as_video_stream_profile().get_intrinsics()
+
+        cameraintrinsics = CameraIntrinsics()
+        cameraintrinsics.setRGBIntrinsics(rgb_intrinsic)
+        self.intrinsics[self.serials[index]] = cameraintrinsics
+
+
 
     def getFrameset(self,index):
         return self.pipelines[self.serials[index]].wait_for_frames()
@@ -56,7 +71,12 @@ class Cameras:
         pass
 
     def getRGBandDepthFrame(self,index):
-        pass
+        frameset = self.pipelines[self.serials[index]].wait_for_frames()
+        aligned_frameset=self.align.process(frameset)
+        color=aligned_frameset.get_color_frame()
+        color = np.asanyarray(color.get_data())
+        depth=aligned_frameset.get_depth_frame()
+        return (color,depth)
 
 
 

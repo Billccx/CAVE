@@ -22,22 +22,24 @@ while(cap.isOpened()):
     result0 = hands.Process(img)
     frame0 = vis.Process([result0], img)
 
-    img_=gamma_trans(img,0.6)
+    #img_=gamma_trans(img,0.6)
 
     # (b, g, r) = cv2.split(img)
     # bH = cv2.equalizeHist(b)
     # gH = cv2.equalizeHist(g)
     # rH = cv2.equalizeHist(r)
     # img_ = cv2.merge((bH, gH, rH))
-    result=hands.Process(img_)
-    if len(result.result)==0:
-        print("frame {} detect failed".format(cnt))
-    frame=vis.Process([result],img_)
 
 
 
-    frame2=cv2.hconcat([frame0,frame])
-    if (len(result0.result) == 0 and len(result.result) == 1):
-        cv2.imwrite('compare/{}.jpg'.format(cnt), frame2)
-    cv2.imshow('img', frame2)
+    # result=hands.Process(img_)
+    # if len(result.result)==0:
+    #     print("frame {} detect failed".format(cnt))
+    # frame=vis.Process([result],img_)
+
+    # frame2=cv2.hconcat([frame0,frame])
+    # if (len(result0.result) == 0 and len(result.result) == 1):
+    #     cv2.imwrite('compare/{}.jpg'.format(cnt), frame2)
+
+    cv2.imshow('img', img)
     cv2.waitKey(5)
