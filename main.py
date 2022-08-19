@@ -25,7 +25,7 @@ if __name__=='__main__':
             f_count=0
         f_count+=1
         #img = cams.getRGBFrame(0)
-        img,_=cams.getRGBandDepthFrame(0)
+        img,depth=cams.getRGBandDepthFrame(0)
 
         img = pipe.forward(img)
 

@@ -75,7 +75,9 @@ class Cameras:
         aligned_frameset=self.align.process(frameset)
         color=aligned_frameset.get_color_frame()
         color = np.asanyarray(color.get_data())
-        depth=aligned_frameset.get_depth_frame()
+
+        depth = aligned_frameset.get_depth_frame()
+        depth2 = np.asanyarray(depth.get_data())
         return (color,depth)
 
 
