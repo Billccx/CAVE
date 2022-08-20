@@ -4,6 +4,7 @@ from calculators.poseDect import PoseDect
 from calculators.visualizer import Visualizer
 from calculators.HandsYolo.handsDectYolo import HandsDectYolo
 from calculators.FaceYolo.faceDectYolo import FaceDectYolo
+from calculators.line import Line
 
 class Pipeline1:
     def __init__(self):
@@ -13,16 +14,26 @@ class Pipeline1:
         self.hands2 = HandsDect()
         self.pose = PoseDect()
         self.visual = Visualizer()
-        self.calculators={'face':self.face,'hands':self.hands}
+        self.line = Line()
+        self.calculators={'face':self.face,'hands':self.hands, 'line':self.line}
         self.results={}
 
-    def forward(self,img):
+    def forward(self,img,**kwargs):
 
         for key,calculator in self.calculators.items():
-            result=calculator.Process(img)
-            self.results[key]=result
+            if(key=='face' or key=='hands'):
+                result=calculator.Process(img)
+                self.results[key]=result
+            elif(key=='line'):
+                result = calculator.Process(img,
+                                            depthframe=kwargs['depthframe'],
+                                            intrinsics=kwargs['intrinsics'],
+                                            faceresult=self.results['face'],
+                                            handsresult=self.results['hands'])
+
 
         for key,calculator in self.calculators.items():
+            if(key=='line'): continue
             calculator.Draw(img,result=self.results[key])
 
 

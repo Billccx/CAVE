@@ -2,6 +2,7 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import os
+from utils.color_img import ColorImg
 
 class CameraIntrinsics:
     def setRGBIntrinsics(self,RGBIntrinsics):
@@ -37,7 +38,8 @@ class Cameras:
 
         cameraintrinsics=CameraIntrinsics()
         cameraintrinsics.setRGBIntrinsics(rgb_intrinsic)
-        self.intrinsics[self.serials[index]]=cameraintrinsics
+        #self.intrinsics[self.serials[index]]=cameraintrinsics
+        self.intrinsics[self.serials[index]] = rgb_intrinsic
 
 
     def captureRGBandDepth(self,index):
@@ -54,7 +56,8 @@ class Cameras:
 
         cameraintrinsics = CameraIntrinsics()
         cameraintrinsics.setRGBIntrinsics(rgb_intrinsic)
-        self.intrinsics[self.serials[index]] = cameraintrinsics
+        #self.intrinsics[self.serials[index]] = cameraintrinsics
+        self.intrinsics[self.serials[index]] = rgb_intrinsic
 
 
 
@@ -73,12 +76,13 @@ class Cameras:
     def getRGBandDepthFrame(self,index):
         frameset = self.pipelines[self.serials[index]].wait_for_frames()
         aligned_frameset=self.align.process(frameset)
-        color=aligned_frameset.get_color_frame()
+        color = aligned_frameset.get_color_frame()
         color = np.asanyarray(color.get_data())
+        colorImg=ColorImg(colorframe=color,rs_intrinsics=self.intrinsics[self.serials[index]])
 
         depth = aligned_frameset.get_depth_frame()
-        depth2 = np.asanyarray(depth.get_data())
-        return (color,depth)
+
+        return (colorImg,depth)
 
 
 
