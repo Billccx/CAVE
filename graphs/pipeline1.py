@@ -5,6 +5,7 @@ from calculators.visualizer import Visualizer
 from calculators.HandsYolo.handsDectYolo import HandsDectYolo
 from calculators.FaceYolo.faceDectYolo import FaceDectYolo
 from calculators.line import Line
+import numpy as np
 
 class Pipeline1:
     def __init__(self):
@@ -20,6 +21,8 @@ class Pipeline1:
 
     def forward(self,img,**kwargs):
 
+        screen = np.zeros(shape=(1080, 1920, 3))
+
         for key,calculator in self.calculators.items():
             if(key=='face' or key=='hands'):
                 result=calculator.Process(img)
@@ -30,11 +33,14 @@ class Pipeline1:
                                             intrinsics=kwargs['intrinsics'],
                                             faceresult=self.results['face'],
                                             handsresult=self.results['hands'])
+                self.results[key] = result
 
 
         for key,calculator in self.calculators.items():
-            if(key=='line'): continue
-            calculator.Draw(img,result=self.results[key])
+            if(key=='line'):
+                calculator.Draw(screen,result=self.results[key])
+            else:
+                calculator.Draw(img,result=self.results[key])
 
 
 
@@ -45,4 +51,4 @@ class Pipeline1:
         #self.results.append(self.pose.Process(img))
         #self.visual.Process(self.results,img)
         self.results.clear()
-        return img
+        return img,screen

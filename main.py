@@ -27,12 +27,16 @@ if __name__=='__main__':
         #img = cams.getRGBFrame(0)
         img,depth=cams.getRGBandDepthFrame(0)
 
-        img = pipe.forward(img.colorframe,depthframe=depth,intrinsics=img.intrinsics)
+        img,screen = pipe.forward(img.colorframe,depthframe=depth,intrinsics=img.intrinsics)
 
         fps = f_count / (time.time() - t1)
         cv2.putText(img, "FPS: %.2f" % (fps), (int(20), int(40)), 0, 5e-3 * 200, (0, 255, 0), 3)
 
         cv2.imshow('img', img)
+        if cv2.waitKey(5) & 0xFF == 27:
+            break
+
+        cv2.imshow('screen', screen)
         if cv2.waitKey(5) & 0xFF == 27:
             break
 

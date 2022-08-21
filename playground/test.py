@@ -1,13 +1,12 @@
-import copy
-from copy import deepcopy
-origin = [1,2,[3,4]]
-# origin里面有三个元素，1,2,[3,4]
-copy1 = copy.copy(origin)
-copy2 = deepcopy(origin)
-print(copy1 == copy2)   # True
-print(copy1 is copy2)   # False
-# copy1 和copy2看上去相同，但已经不是同一个object
-origin[1] = "hey!"
-print(origin)   # [1, 2, ['hey!', 4]]
-print(copy1)    # [1, 2, ['hey!', 4]]
-print(copy2)    # [1, 2, [3, 4]]
+import numpy as np
+import cv2
+import os
+import matplotlib.pyplot as plt
+
+# 初始化一个图像数组
+img = np.zeros(shape=(480, 640,3))
+
+cv2.circle(img,(100,200),5,(0,0,255))
+
+cv2.imshow("img", img)
+cv2.waitKey(0)

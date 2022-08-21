@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import pyrealsense2 as rs2
 from calculators.baseCalculator import BaseCalculator
+from utils.result import Result
 
 class Line(BaseCalculator):
     def __init__(self):
@@ -22,7 +23,9 @@ class Line(BaseCalculator):
                 t_.append(row)
             knt += 1
         self.R = np.array(R_).T
-        self.t = -np.matmul(self.R,np.array(t_).reshape(3, 1))+np.array([-310,-360,58]).reshape(3, 1)
+        #self.t = -np.matmul(self.R,np.array(t_).reshape(3, 1))+np.array([-310,-360,58]).reshape(3, 1)
+        #预设横向2m，纵向1.125m 16：9
+        self.t = -np.matmul(self.R, np.array(t_).reshape(3, 1)) + np.array([-1000, 1175, 0]).reshape(3, 1)
 
 
     def Process(self,img,**kwargs):
@@ -36,18 +39,26 @@ class Line(BaseCalculator):
         faceresult=kwargs['faceresult']
         handsresult=kwargs['handsresult']
 
-        headpoints3d = [0, 0, 0]
+        hasHead=False
+        hasHand=False
+
+        headpoint3d = [0, 0, 0]
         if len(faceresult.result):
+
             headlandmarks=faceresult.result[0]['landmark']
             #两眼中心
             headpoint2d = (
                 (headlandmarks[0] + headlandmarks[2]) / 2,
                 (headlandmarks[1] + headlandmarks[3]) / 2
             )
-            headpoint_depth = depth.get_distance(int(headpoint2d[0]), int(headpoint2d[1]))
 
-            headpoint3d=rs2.rs2_deproject_pixel_to_point(intrin=intrinsics,pixel=headpoint2d,depth=headpoint_depth)
-            print("head: {}".format(headpoint3d))
+            if int(headpoint2d[0])>=0 and int(headpoint2d[0])<=640 and int(headpoint2d[1])>=0 and int(headpoint2d[1])<=480: #change more elegant way
+                headpoint_depth = depth.get_distance(int(headpoint2d[0]), int(headpoint2d[1]))
+                headpoint3d = rs2.rs2_deproject_pixel_to_point(intrin=intrinsics, pixel=headpoint2d,depth=headpoint_depth)
+                hasHead = True
+                #print("head: {}".format(headpoint3d))
+
+
 
         handpoint3d = [0, 0, 0]
         if len(handsresult.result):
@@ -56,19 +67,38 @@ class Line(BaseCalculator):
             handpoint2d=(x+w/2,y+h/2)
             handpoint_depth = depth.get_distance(int(handpoint2d[0]),int(handpoint2d[1]))
             handpoint3d=rs2.rs2_deproject_pixel_to_point(intrin=intrinsics,pixel=handpoint2d,depth=handpoint_depth)
-            print("hand: {}".format(handpoint3d))
+            hasHand = True
+            #print("hand: {}".format(handpoint3d))
 
         headpoint3d = np.array(headpoint3d).reshape(3, 1)*1000
         handpoint3d = np.array(handpoint3d).reshape(3, 1)*1000
         headpoint3d_trans=np.matmul(self.R,headpoint3d)+self.t
         handpoint3d_trans=np.matmul(self.R,handpoint3d)+self.t
-        print(headpoint3d_trans,'\n\n',handpoint3d_trans)
+        #print(headpoint3d_trans,'\n\n',handpoint3d_trans)
+
+        x=0
+        y=0
+        if hasHand and hasHead:
+            x = headpoint3d_trans[0][0] - headpoint3d_trans[2][0] / (headpoint3d_trans[2][0] - handpoint3d_trans[2][0]) * (headpoint3d_trans[0][0] - handpoint3d_trans[0][0])
+            y = headpoint3d_trans[1][0] - headpoint3d_trans[2][0] / (headpoint3d_trans[2][0] - handpoint3d_trans[2][0]) * (headpoint3d_trans[1][0] - handpoint3d_trans[1][0])
+            x = -x
+
+
+        result=Result('line')
+        result.setResult((x,y))
+
+        return result
 
 
 
 
 
     def Draw(self,img,**kwargs):
-        pass
+        # x=kwargs['result'].result[0]/0.1554/3840*1920
+        # y=kwargs['result'].result[1]/0.1554/2160*1080
+        x = kwargs['result'].result[0] / 0.1554 / 12870 * 1920
+        y = kwargs['result'].result[1] / 0.1554 / 7240 * 1080
+        print("coordinate ({},{})".format(x,y))
+        cv2.circle(img,(int(x),int(y)),40,(0,0,255))
 
 
