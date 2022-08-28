@@ -1,13 +1,14 @@
+import math
+
 import cv2
 import numpy as np
 import pyrealsense2 as rs2
 from calculators.baseCalculator import BaseCalculator
 from utils.result import Result
-import math
 
-class Line(BaseCalculator):
-    def __init__(self):
-        f=open('/home/cuichenxi/code/Python/extrinsics2/extrinsics.txt','r',encoding='utf-8')
+class Line2(BaseCalculator):
+    def __init__(self,path):
+        f=open('/home/cuichenxi/code/Python/extrinsics2/'+path,'r',encoding='utf-8')
         R_ = []
         t_ = []
         knt = 0
@@ -24,16 +25,7 @@ class Line(BaseCalculator):
                 t_.append(row)
             knt += 1
 
-        R_=[
-            [1,0,0],[0,1,0],[0,0,1]
-        ]
-
-        t_= [-500,680,0]
-
         self.R = np.array(R_).T
-        #self.t = -np.matmul(self.R,np.array(t_).reshape(3, 1))+np.array([-310,-360,58]).reshape(3, 1)
-        #预设横向2m，纵向1.125m 16：9
-        # self.t = -np.matmul(self.R, np.array(t_).reshape(3, 1)) + np.array([-1000, 1175, 0]).reshape(3, 1)
         self.t=np.array(t_).reshape(3, 1)
 
     def Process(self,img,**kwargs):
@@ -82,7 +74,7 @@ class Line(BaseCalculator):
         handpoint3d = np.array(handpoint3d).reshape(3, 1)*1000
         headpoint3d_trans=np.matmul(self.R,headpoint3d)+self.t
         handpoint3d_trans=np.matmul(self.R,handpoint3d)+self.t
-        #print(headpoint3d_trans,'\n\n',handpoint3d_trans)
+        print("\n\nhead\n",headpoint3d_trans,'\nhand\n',handpoint3d_trans)
 
         x=0
         y=0
@@ -102,18 +94,19 @@ class Line(BaseCalculator):
 
 
     def Draw(self,img,**kwargs):
-        # x=kwargs['result'].result[0]/0.1554/3840*1920
-        # y=kwargs['result'].result[1]/0.1554/2160*1080
-        # x = kwargs['result'].result[0] / 0.1554 / 12870 * 1920
-        # y = kwargs['result'].result[1] / 0.1554 / 7240 * 1080
-        x = kwargs['result'].result[0] / 0.1797 / 8904 * 720
-        y = kwargs['result'].result[1] / 0.1815 / 8815 * 720
-        print("coordinate ({},{})".format(x,y))
+        x = kwargs['result'].result[0] / 0.1797 / 8904 * 500
+        y = kwargs['result'].result[1] / 0.1815 / 8815 * 500
+        print("from cam {}, coordinate ({},{})".format(kwargs['index'],x,y))
+
         if math.isnan(x) or x==float('inf') or x==float('-inf'):
             x=0
         if math.isnan(y) or y==float('inf') or y==float('-inf'):
             y=0
-        cv2.circle(img=img, center=(int(x), int(y)), radius=30, color=(0, 0, 255), thickness=cv2.FILLED)
+
+        if (kwargs['index'] == 0):
+            cv2.circle(img=img, center=(int(x), int(y)), radius=30, color=(0, 0, 255), thickness=cv2.FILLED)
+        else:
+            cv2.circle(img=img, center=(int(x), int(y)), radius=30, color=(0, 255, 0), thickness=cv2.FILLED)
 
 
 

@@ -4,6 +4,7 @@ from cameras import Cameras
 from calculators.HandsYolo.handsDectYolo import HandsDectYolo
 from calculators.visualizer import Visualizer
 import numpy as np
+import time
 
 
 def gamma_trans(img, gamma):  # gamma函数处理
@@ -16,11 +17,20 @@ cap=cv2.VideoCapture('basicvideo.mp4')
 hands=HandsDectYolo()
 vis=Visualizer()
 cnt=0
+f_count=0
+t1=time.time()
 while(cap.isOpened()):
+    if f_count > 30:
+        t1 = time.time()
+        f_count = 0
+    f_count += 1
     cnt += 1
     success, img = cap.read()
     result0 = hands.Process(img)
     frame0 = vis.Process([result0], img)
+
+    fps = f_count / (time.time() - t1)
+    cv2.putText(img, "FPS: %.2f" % (fps), (int(20), int(40)), 0, 5e-3 * 200, (0, 255, 0), 3)
 
     #img_=gamma_trans(img,0.6)
 

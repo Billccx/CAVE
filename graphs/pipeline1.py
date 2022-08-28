@@ -16,12 +16,12 @@ class Pipeline1:
         self.pose = PoseDect()
         self.visual = Visualizer()
         self.line = Line()
-        self.calculators={'face':self.face,'hands':self.hands, 'line':self.line}
+        self.calculators={'face':self.face,'hands':self.hands,'line':self.line}
         self.results={}
 
     def forward(self,img,**kwargs):
 
-        screen = np.zeros(shape=(1080, 1920, 3))
+        screen = np.zeros(shape=(720, 720, 3))
 
         for key,calculator in self.calculators.items():
             if(key=='face' or key=='hands'):
