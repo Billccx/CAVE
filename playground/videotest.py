@@ -13,7 +13,7 @@ def gamma_trans(img, gamma):  # gamma函数处理
     return cv2.LUT(img, gamma_table)
 
 
-cap=cv2.VideoCapture('basicvideo.mp4')
+cap=cv2.VideoCapture('basicvideo2.mp4')
 hands=HandsDectYolo()
 vis=Visualizer()
 cnt=0
@@ -26,8 +26,28 @@ while(cap.isOpened()):
     f_count += 1
     cnt += 1
     success, img = cap.read()
+    img2=img.copy()
+    img2_hsv=cv2.cvtColor(img2, cv2.COLOR_BGR2HSV)
+    img2_hsv[:,:,2]=img2_hsv[:,:,2]*2
+    img2_hsv[:, :, 2][img2_hsv[:, :, 2]>255]=255
+
+
+    v_info = cv2.split(img2_hsv)[2]
+    mean_v = np.mean(v_info)
+    print(mean_v)
+
+    img2_light=cv2.cvtColor(img2_hsv, cv2.COLOR_HSV2BGR)
+
+
+
     result0 = hands.Process(img)
     frame0 = vis.Process([result0], img)
+
+    result1=hands.Process(img2_light)
+    vis.Process([result1],img2_light)
+
+
+    img=cv2.hconcat([img,img2_light])
 
     fps = f_count / (time.time() - t1)
     cv2.putText(img, "FPS: %.2f" % (fps), (int(20), int(40)), 0, 5e-3 * 200, (0, 255, 0), 3)
